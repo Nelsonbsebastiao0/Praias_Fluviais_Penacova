@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Registro - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h1>Registro</h1>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label }}
+            {{ form.email }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password }}
+        </div>
+        <div class="form-group">
+            {{ form.confirm_password.label }}
+            {{ form.confirm_password }}
+        </div>
+        {{ form.submit }}
+    </form>
+    <p>Já tem uma conta? <a href="{{ url_for('login') }}">Faça login</a></p>
+</div>
+{% endblock %}

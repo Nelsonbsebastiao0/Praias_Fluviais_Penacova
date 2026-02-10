@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">{{ title }}</h1>
+            
+            <form method="POST" class="space-y-6">
+                {{ form.hidden_tag() }}
+                
+                <!-- Nome -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">
+                        {{ form.name.label.text }}
+                    </label>
+                    <div class="mt-1">
+                        {{ form.name(
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                        ) }}
+                    </div>
+                    {% if form.name.errors %}
+                        {% for error in form.name.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">
+                        {{ form.email.label.text }}
+                    </label>
+                    <div class="mt-1">
+                        {{ form.email(
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                        ) }}
+                    </div>
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Número de Contribuinte (NIF) -->
+                <div>
+                    <label for="tax_number" class="block text-sm font-medium text-gray-700">
+                        {{ form.tax_number.label.text }}
+                    </label>
+                    <div class="mt-1">
+                        {{ form.tax_number(
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md",
+                            placeholder="123456789",
+                            maxlength="9"
+                        ) }}
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Opcional - 9 dígitos</p>
+                    {% if form.tax_number.errors %}
+                        {% for error in form.tax_number.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Palavra-passe -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">
+                        {{ form.password.label.text }}
+                    </label>
+                    <div class="mt-1">
+                        {% if editing %}
+                            {{ form.password(
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md",
+                                placeholder="Deixe em branco para manter a palavra-passe atual"
+                            ) }}
+                        {% else %}
+                            {{ form.password(
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                            ) }}
+                        {% endif %}
+                    </div>
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Confirmar Palavra-passe -->
+                <div>
+                    <label for="password_confirm" class="block text-sm font-medium text-gray-700">
+                        {{ form.password_confirm.label.text }}
+                    </label>
+                    <div class="mt-1">
+                        {{ form.password_confirm(
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md",
+                            placeholder="Confirme a palavra-passe"
+                        ) }}
+                    </div>
+                    {% if form.password_confirm.errors %}
+                        {% for error in form.password_confirm.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Role -->
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700">
+                        {{ form.role.label.text }}
+                    </label>
+                    <div class="mt-1">
+                        {% if editing and request.view_args.id|int == current_user.id and current_user.role == 'presidente' %}
+                            {{ form.role(
+                                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm",
+                                disabled=true
+                            ) }}
+                            <p class="mt-1 text-sm text-gray-500">Como presidente, você não pode alterar sua própria função</p>
+                        {% else %}
+                            {{ form.role(
+                                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            ) }}
+                        {% endif %}
+                    </div>
+                    {% if form.role.errors %}
+                        {% for error in form.role.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Botões -->
+                <div class="pt-5 flex justify-end space-x-3">
+                    <a href="{{ url_for('users') }}" 
+                       class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancelar
+                    </a>
+                    {{ form.submit(
+                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    ) }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

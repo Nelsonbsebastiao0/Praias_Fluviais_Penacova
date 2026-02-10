@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white/60 backdrop-blur-md shadow-xl rounded-2xl border border-gray-100">
+        <div class="p-6">
+            <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-cog text-primary-500 mr-3"></i>
+                Configurações
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">Personalize sua experiência no sistema</p>
+
+            <form method="POST" class="mt-8 space-y-8">
+
+                <!-- Aparência -->
+                <div class="bg-white rounded-xl p-6 space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Aparência</h3>
+                    
+                    <!-- Tema -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Tema</label>
+                        <div class="mt-2 grid grid-cols-2 gap-4">
+                            <label class="relative flex cursor-pointer rounded-lg border border-gray-200 p-4 hover:border-primary-500 {% if preferences.theme == 'light' %}border-primary-500 ring-2 ring-primary-500{% endif %}">
+                                <input type="radio" name="theme" value="light" class="sr-only" 
+                                       {% if preferences.theme == 'light' %}checked{% endif %}>
+                                <span class="flex flex-1">
+                                    <span class="flex flex-col">
+                                        <span class="block text-sm font-medium text-gray-900">Claro</span>
+                                        <span class="mt-1 text-xs text-gray-500">Tema padrão com fundo claro</span>
+                                    </span>
+                                </span>
+                                <i class="fas fa-sun text-primary-500 ml-4"></i>
+                            </label>
+                            <label class="relative flex cursor-pointer rounded-lg border border-gray-200 p-4 hover:border-primary-500 {% if preferences.theme == 'dark' %}border-primary-500 ring-2 ring-primary-500{% endif %}">
+                                <input type="radio" name="theme" value="dark" class="sr-only"
+                                       {% if preferences.theme == 'dark' %}checked{% endif %}>
+                                <span class="flex flex-1">
+                                    <span class="flex flex-col">
+                                        <span class="block text-sm font-medium text-gray-900">Escuro</span>
+                                        <span class="mt-1 text-xs text-gray-500">Tema escuro para uso noturno</span>
+                                    </span>
+                                </span>
+                                <i class="fas fa-moon text-primary-500 ml-4"></i>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Densidade de Conteúdo -->
+                    <div class="mt-6">
+                        <label class="text-sm font-medium text-gray-700">Densidade de Conteúdo</label>
+                        <div class="mt-2">
+                            <select name="content_density" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                                <option value="comfortable" {% if preferences.get_display_settings().content_density == 'comfortable' %}selected{% endif %}>
+                                    Confortável
+                                </option>
+                                <option value="compact" {% if preferences.get_display_settings().content_density == 'compact' %}selected{% endif %}>
+                                    Compacto
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notificações -->
+                <div class="bg-white rounded-xl p-6 space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Notificações</h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Notificações do Sistema -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" name="notifications_enabled" 
+                                       class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                       {% if preferences.notifications_enabled %}checked{% endif %}>
+                            </div>
+                            <div class="ml-3">
+                                <label class="text-sm font-medium text-gray-700">Notificações do Sistema</label>
+                                <p class="text-xs text-gray-500">Receba atualizações sobre ocorrências e atividades</p>
+                            </div>
+                        </div>
+
+                        <!-- Notificações por Email -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" name="email_notifications" 
+                                       class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                       {% if preferences.email_notifications %}checked{% endif %}>
+                            </div>
+                            <div class="ml-3">
+                                <label class="text-sm font-medium text-gray-700">Notificações por Email</label>
+                                <p class="text-xs text-gray-500">Receba atualizações importantes por email</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if current_user.role in ['presidente', 'supervisor'] %}
+                <!-- Relatórios -->
+                <div class="bg-white rounded-xl p-6 space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Relatórios</h3>
+                    
+                    <!-- Formato de Relatório -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Formato Padrão de Relatório</label>
+                        <select name="report_format" class="mt-2 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            <option value="pdf" {% if preferences.get_display_settings().report_format == 'pdf' %}selected{% endif %}>PDF</option>
+                            <option value="csv" {% if preferences.get_display_settings().report_format == 'csv' %}selected{% endif %}>CSV</option>
+                            <option value="excel" {% if preferences.get_display_settings().report_format == 'excel' %}selected{% endif %}>Excel</option>
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Botões -->
+                <div class="flex items-center justify-end space-x-4">
+                    <button type="reset" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Restaurar Padrões
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

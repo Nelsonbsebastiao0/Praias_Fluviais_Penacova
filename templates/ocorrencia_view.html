@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Ocorrência - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="bg-white/60 backdrop-blur-md shadow-xl rounded-2xl border border-gray-100 overflow-hidden p-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-4">Detalhes da Ocorrência</h1>
+
+    <div class="space-y-4">
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm text-gray-500">ID</div>
+        <div class="font-medium text-gray-900">{{ ocorrencia.id }}</div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm text-gray-500">Data</div>
+        <div class="font-medium text-gray-900">{{ ocorrencia.date.strftime('%d/%m/%Y %H:%M') }}</div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm text-gray-500">Zona</div>
+        <div class="font-medium text-gray-900">{{ ocorrencia.zone }}</div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm text-gray-500">Tipo</div>
+        <div class="font-medium text-gray-900">{{ ocorrencia.type }}</div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm text-gray-500">Descrição</div>
+        <div class="font-medium text-gray-900 whitespace-pre-line">{{ ocorrencia.description }}</div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm text-gray-500">Registado por</div>
+        <div class="font-medium text-gray-900">{{ ocorrencia.user.name }} ({{ ocorrencia.user.email }})</div>
+      </div>
+
+      <div class="flex gap-3 mt-4">
+        <a href="{{ url_for('ocorrencias') }}" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">Voltar à lista</a>
+        {% if current_user.role in [ROLE_SUPERVISOR, ROLE_PRESIDENTE] or (current_user.role == ROLE_NADADOR and ocorrencia.user_id == current_user.id) %}
+        <a href="{{ url_for('edit_occurrence', id=ocorrencia.id) }}" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">Editar</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

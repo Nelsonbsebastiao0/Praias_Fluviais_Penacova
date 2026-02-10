@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Gerir Tipos - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-semibold mb-4">Tipos de Ocorrência</h2>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead>
+        <tr>
+          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+          <th class="px-4 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in types %}
+        <tr>
+          <td class="px-4 py-2">{{ t.name }}</td>
+          <td class="px-4 py-2 text-right">
+            <form method="POST" action="{{ url_for('delete_type', type_id=t.id) }}" style="display:inline;">
+              <button type="submit" class="text-red-600 hover:underline text-sm" onclick="return confirm('Tem certeza que deseja eliminar este tipo?');">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="mt-6 flex justify-end">
+      <a href="{{ url_for('ocorrencias') }}" class="px-4 py-2 bg-gray-200 rounded">Voltar</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

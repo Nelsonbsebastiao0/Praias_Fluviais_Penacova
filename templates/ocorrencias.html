@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Ocorrências - Praias Fluviais{% endblock %}
+
+{% block content %}
+<!-- Modal para exibir descrição completa -->
+<div id="descriptionModal" class="hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm overflow-y-auto h-full w-full z-50 transition-all duration-300">
+    <div class="relative top-20 mx-auto p-6 max-w-2xl transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+        <div class="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl border border-gray-100">
+            <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900">Descrição Completa</h3>
+                <button class="close-modal text-gray-400 hover:text-gray-600 w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-all duration-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modalDescription" class="p-6 text-gray-600 leading-relaxed"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showDescription(element) {
+    const fullText = element.getAttribute('data-full-text');
+    const modal = document.getElementById('descriptionModal');
+    const modalContent = document.getElementById('modalContent');
+    const modalDescription = document.getElementById('modalDescription');
+    
+    modalDescription.textContent = fullText;
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Animate in
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+// Fechar modal
+function closeModal() {
+    const modal = document.getElementById('descriptionModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    // Animate out
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }, 200);
+}
+
+document.querySelector('.close-modal').onclick = closeModal;
+
+window.onclick = function(event) {
+    const modal = document.getElementById('descriptionModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+</script>
+
+<div class="bg-white/60 backdrop-blur-md shadow-xl rounded-2xl border border-gray-100">
+    <!-- Header with Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 border-b border-gray-100">
+        <div class="col-span-1 md:col-span-2">
+            <h1 class="text-2xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-clipboard-list text-primary-500 mr-3"></i>
+                Ocorrências
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">Gestão de ocorrências nas praias fluviais</p>
+        </div>
+        <div class="col-span-1 bg-green-50 rounded-xl p-4">
+            <div class="text-green-600 text-sm font-medium">Total de Ocorrências</div>
+            <div class="mt-1 flex items-baseline">
+                <div class="text-2xl font-semibold text-green-800">{{ ocorrencias|length }}</div>
+                <div class="ml-2 text-sm text-green-600">registos</div>
+            </div>
+        </div>
+        <div class="col-span-1">
+            <a href="{{ url_for('nova_ocorrencia') }}" 
+               class="w-full h-full flex items-center justify-center px-4 py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl shadow-lg shadow-primary-500/30 hover:from-primary-700 hover:to-primary-600 transition-all duration-200 transform hover:-translate-y-0.5">
+                <i class="fas fa-plus-circle text-xl mr-2"></i>
+                <span class="font-semibold">Nova Ocorrência</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filtros e Download -->
+    <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+        <div class="mb-4">
+            <h3 class="text-sm font-semibold text-gray-900 mb-4">
+                <i class="fas fa-filter text-primary-500 mr-2"></i>
+                Filtros de Exportação
+            </h3>
+        </div>
+        <form id="filterForm" method="get" action="{{ url_for('ocorrencias') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Data Início</label>
+                <input type="date" name="start_date" id="start_date" value="{{ request.args.get('start_date','') }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Data Fim</label>
+                <input type="date" name="end_date" id="end_date" value="{{ request.args.get('end_date','') }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Zona</label>
+                <input type="text" name="zone" id="zone" placeholder="Ex: Rio, Lago..." value="{{ request.args.get('zone','') }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Tipo</label>
+                <input type="text" name="type" id="type" placeholder="Ex: Acidente..." value="{{ request.args.get('type','') }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Utilizador</label>
+                <select name="user_id" id="user_id" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    <option value="">Todos</option>
+                    {% if all_users %}
+                        {% for user in all_users %}
+                        <option value="{{ user.id }}" {% if request.args.get('user_id') and request.args.get('user_id')|int == user.id %}selected{% endif %}>{{ user.name }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+        </form>
+        <div class="flex gap-3 flex-wrap">
+            <button type="submit" formaction="{{ url_for('export_csv') }}" formmethod="get" formtarget="_blank" data-export-type="csv"
+                    class="export-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center text-sm font-medium">
+                <i class="fas fa-download mr-2"></i>
+                Exportar CSV
+            </button>
+            <button type="submit" formaction="{{ url_for('export_pdf') }}" formmethod="get" formtarget="_blank" data-export-type="pdf"
+                    class="export-btn px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center text-sm font-medium">
+                <i class="fas fa-file-pdf mr-2"></i>
+                Exportar PDF
+            </button>
+            <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-200 flex items-center text-sm font-medium">
+                <i class="fas fa-check mr-2"></i>
+                Aplicar Filtros
+            </button>
+            <button type="button" onclick="limparFiltros()" 
+                    class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-all duration-200 flex items-center text-sm font-medium">
+                <i class="fas fa-times mr-2"></i>
+                Limpar Filtros
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="p-6">
+        <div class="overflow-x-auto">
+            <div class="inline-block min-w-full">
+                <div class="bg-white/40 backdrop-blur-sm rounded-xl border border-gray-100">
+                    <table class="min-w-full divide-y divide-gray-100">
+                        <thead>
+                            <tr class="bg-gray-50/50">
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Data</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Zona</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipo</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Descrição</th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Autor</th>
+                                <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for o in ocorrencias %}
+                            <tr class="hover:bg-white/60 transition-all duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm font-medium text-gray-900">#{{ o.id }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 font-medium">{{ o.date.strftime('%d/%m/%Y') }}</div>
+                                    <div class="text-xs text-gray-500">{{ o.date.strftime('%H:%M') }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="h-2 w-2 rounded-full bg-blue-400 mr-2"></div>
+                                        <span class="text-sm text-gray-900 block max-w-[14rem] truncate">{{ o.zone|replace('_', ' ')|title|truncate(30, True, '...') }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 max-w-[12rem] truncate">
+                                        {{ o.type|title|truncate(30, True, '...') }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-600 cursor-pointer hover:text-primary-600 transition-colors duration-200" 
+                                         onclick="showDescription(this)" 
+                                         data-full-text="{{ o.description }}">
+                                        {{ o.description|truncate(100, true, '...') }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                            <i class="fas fa-user text-gray-500"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">{{ o.user.name }}</div>
+                                            <div class="text-xs text-gray-500">{{ o.user.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    <div class="flex items-center justify-end space-x-2">
+                                        <a href="{{ url_for('edit_occurrence', id=o.id) }}" 
+                                           class="p-2 text-primary-600 hover:text-primary-800 hover:bg-primary-50 rounded-lg transition-all duration-200">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ url_for('delete_occurrence', id=o.id) }}" method="POST" class="inline">
+                                            <button type="submit" 
+                                                    class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                                    onclick="return confirm('Tem certeza que deseja excluir esta ocorrência?');">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Funções para exportação com filtros e confirmação quando não há filtros
+function construirQueryString() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    const zone = document.getElementById('zone').value;
+    const type = document.getElementById('type').value;
+    const userId = document.getElementById('user_id').value;
+
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    if (zone) params.append('zone', zone);
+    if (type) params.append('type', type);
+    if (userId) params.append('user_id', userId);
+
+    return params.toString();
+}
+
+function limparFiltros() {
+    document.getElementById('start_date').value = '';
+    document.getElementById('end_date').value = '';
+    document.getElementById('zone').value = '';
+    document.getElementById('type').value = '';
+    document.getElementById('user_id').value = '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Intercepta botões de exportação dentro da página de ocorrências
+    document.querySelectorAll('.export-btn').forEach(btn => {
+        btn.addEventListener('click', function(ev) {
+            // Previne comportamento padrão para controlar confirmação
+            ev.preventDefault();
+
+            const query = construirQueryString();
+            const exportUrl = btn.getAttribute('formaction') || btn.dataset.exportUrl;
+            const target = btn.getAttribute('formtarget') || '_self';
+
+            if (!query) {
+                const finalUrl = exportUrl + (query ? ('?' + query) : '');
+                if (typeof window.openExportModal === 'function') {
+                    // usa o modal global para confirmar/desviar
+                    window.openExportModal(finalUrl);
+                    return;
+                } else {
+                    const confirmAll = confirm('Não foram aplicados filtros. Deseja exportar todos os registos? OK = Exportar tudo, Cancel = Ir para filtros.');
+                    if (!confirmAll) {
+                        const filterEl = document.getElementById('start_date') || document.getElementById('filterForm');
+                        if (filterEl) filterEl.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        return;
+                    }
+                    if (target === '_blank') {
+                        window.open(finalUrl, '_blank');
+                    } else {
+                        window.location.href = finalUrl;
+                    }
+                    return;
+                }
+            }
+
+            const finalUrl = exportUrl + (query ? ('?' + query) : '');
+            // Abrir numa nova aba se pedido
+            if (target === '_blank') {
+                window.open(finalUrl, '_blank');
+            } else {
+                window.location.href = finalUrl;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-semibold mb-4">Configurações Administrativas</h2>
+    <ul class="space-y-4">
+      <li>
+        <a href="{{ url_for('new_zone') }}" class="block px-4 py-3 bg-primary-50 hover:bg-primary-100 rounded text-primary-800 font-medium">
+          <i class="fas fa-map-marker-alt mr-2"></i> Criar Nova Zona
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('new_type') }}" class="block px-4 py-3 bg-primary-50 hover:bg-primary-100 rounded text-primary-800 font-medium">
+          <i class="fas fa-tags mr-2"></i> Criar Novo Tipo de Ocorrência
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('zones_manage') }}" class="block px-4 py-3 bg-primary-50 hover:bg-primary-100 rounded text-primary-800 font-medium">
+          <i class="fas fa-cogs mr-2"></i> Gerir Zonas
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('types_manage') }}" class="block px-4 py-3 bg-primary-50 hover:bg-primary-100 rounded text-primary-800 font-medium">
+          <i class="fas fa-cogs mr-2"></i> Gerir Tipos
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('settings_time_limit') }}" class="block px-4 py-3 bg-primary-50 hover:bg-primary-100 rounded text-primary-800 font-medium">
+          <i class="fas fa-clock mr-2"></i> Definir Limite de Tempo para Registo de Ocorrência
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Welcome Section -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Bem-vindo, {{ current_user.name }}</h1>
+    <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+      {% if current_user.role == 'presidente' %}
+        bg-purple-100 text-purple-800
+      {% elif current_user.role == 'supervisor' %}
+        bg-blue-100 text-blue-800
+      {% else %}
+        bg-green-100 text-green-800
+      {% endif %}
+    ">
+      <i class="fas fa-user-shield mr-2"></i>
+      {{ current_user.role|title }}
+    </div>
+  </div>
+
+  <!-- Estatísticas Modernas -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-8 mt-4">
+    <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+      <i class="fas fa-chart-bar text-primary-600"></i>
+      Estatísticas & Relatórios
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Ocorrências por mês -->
+      <div>
+        <h3 class="text-md font-semibold text-gray-700 mb-2 flex items-center gap-1"><i class="fas fa-calendar-alt text-blue-400"></i> Ocorrências por mês</h3>
+        <canvas id="chartByMonth" height="180"></canvas>
+      </div>
+      <!-- Ocorrências por zona -->
+      <div>
+        <h3 class="text-md font-semibold text-gray-700 mb-2 flex items-center gap-1"><i class="fas fa-map-marker-alt text-green-400"></i> Por Zona</h3>
+        <canvas id="chartByZone" height="180"></canvas>
+      </div>
+      <!-- Ocorrências por tipo -->
+      <div>
+        <h3 class="text-md font-semibold text-gray-700 mb-2 flex items-center gap-1"><i class="fas fa-layer-group text-purple-400"></i> Por Tipo</h3>
+        <canvas id="chartByType" height="180"></canvas>
+      </div>
+    </div>
+    <div class="text-xs text-gray-400 mt-4 text-right">Visualização moderna e interativa • Powered by Chart.js</div>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Ocorrências Card -->
+    <a href="{{ url_for('ocorrencias') }}" 
+       class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200 flex flex-col items-center justify-center text-center space-y-4">
+      <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+        <i class="fas fa-clipboard-list text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900">Ver Ocorrências</h3>
+      <p class="text-sm text-gray-500">Gerir e visualizar registos</p>
+    </a>
+
+    <!-- Utilizadores Card (apenas para presidente e supervisor) -->
+    {% if current_user.role in ['presidente', 'supervisor'] %}
+    <a href="{{ url_for('users') }}" 
+       class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200 flex flex-col items-center justify-center text-center space-y-4">
+      <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center">
+        <i class="fas fa-users text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900">Gestão de Utilizadores</h3>
+      <p class="text-sm text-gray-500">Administrar contas de usuário</p>
+    </a>
+    {% endif %}
+
+    <!-- Export CSV Card -->
+    <button type="button" data-export-url="{{ url_for('export_csv') }}" class="global-export-btn bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200 flex flex-col items-center justify-center text-center space-y-4">
+      <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+        <i class="fas fa-file-csv text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900">Exportar CSV</h3>
+      <p class="text-sm text-gray-500">Download em formato CSV</p>
+    </button>
+
+    <!-- Export PDF Card -->
+    <button type="button" data-export-url="{{ url_for('export_pdf') }}" class="global-export-btn bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200 flex flex-col items-center justify-center text-center space-y-4">
+      <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+        <i class="fas fa-file-pdf text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900">Exportar PDF</h3>
+      <p class="text-sm text-gray-500">Download em formato PDF</p>
+    </button>
+  </div>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('/api/dashboard-stats')
+    .then(r => r.json())
+    .then(data => {
+      // Ocorrências por mês
+      const ctxMonth = document.getElementById('chartByMonth').getContext('2d');
+      const labelsMonth = Object.keys(data.by_month);
+      const valuesMonth = Object.values(data.by_month);
+      new Chart(ctxMonth, {
+        type: 'line',
+        data: {
+          labels: labelsMonth,
+          datasets: [{
+            label: 'Ocorrências',
+            data: valuesMonth,
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14,165,233,0.15)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#0ea5e9',
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#e5e7eb' } },
+            x: { grid: { color: '#f3f4f6' } }
+          }
+        }
+      });
+
+      // Ocorrências por zona
+      const ctxZone = document.getElementById('chartByZone').getContext('2d');
+      const labelsZone = Object.keys(data.by_zone);
+      const valuesZone = Object.values(data.by_zone);
+      // Gerar paleta dinâmica HSL para evitar repetição de cores em muitas zonas
+      const generateHslPalette = (n, saturation = 70, lightness = 50) => {
+        const colors = [];
+        for (let i = 0; i < n; i++) {
+          const hue = Math.round((i * 360) / n);
+          colors.push(`hsl(${hue} ${saturation}% ${lightness}%)`);
+        }
+        return colors;
+      };
+
+      const zoneColors = generateHslPalette(labelsZone.length, 65, 55);
+
+      new Chart(ctxZone, {
+        type: 'doughnut',
+        data: {
+          labels: labelsZone,
+          datasets: [{
+            label: 'Por Zona',
+            data: valuesZone,
+            backgroundColor: zoneColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'bottom' },
+            title: { display: false }
+          }
+        }
+      });
+
+      // Ocorrências por tipo
+      const ctxType = document.getElementById('chartByType').getContext('2d');
+      const labelsType = Object.keys(data.by_type);
+      const valuesType = Object.values(data.by_type);
+      new Chart(ctxType, {
+        type: 'bar',
+        data: {
+          labels: labelsType,
+          datasets: [{
+            label: 'Por Tipo',
+            data: valuesType,
+            backgroundColor: '#a21caf',
+            borderRadius: 8
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: false },
+            title: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#e5e7eb' } },
+            x: { grid: { color: '#f3f4f6' } }
+          }
+        }
+      });
+    });
+});
+</script>
+</div>
+{% endblock %}

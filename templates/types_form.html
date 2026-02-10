@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Novo Tipo - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-semibold mb-4">Criar Novo Tipo de Ocorrência</h2>
+    <form method="POST">
+      <input type="hidden" name="next" value="{{ request.form.get('next', request.args.get('next', '')) }}">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Nome do Tipo</label>
+        <input type="text" name="name" required class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Ex: Afogamento" />
+      </div>
+      <div class="mt-4 flex justify-end space-x-2">
+        <a href="{{ request.referrer or url_for('ocorrencias') }}" class="px-4 py-2 bg-white border rounded text-sm">Cancelar</a>
+        <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded">Criar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

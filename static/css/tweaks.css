@@ -1,0 +1,115 @@
+/* Mobile-first tweaks to improve spacing and font sizes on small screens
+   These overrides are non-invasive and only adjust visual sizes.
+   Use !important sparingly to override compiled Tailwind utilities where needed.
+*/
+
+/* Global small-screen adjustments */
+@media (max-width: 639px) {
+  html { font-size: 15px; }
+  body { line-height: 1.4; }
+
+  /* Make main container use more horizontal space on small screens */
+  .max-w-7xl { max-width: 100% !important; }
+  main.max-w-7xl, .max-w-7xl.mx-auto { padding-left: 1rem !important; padding-right: 1rem !important; }
+
+  /* Reduce large paddings inside cards/forms */
+  .p-6 { padding: 0.75rem !important; }
+  .p-4 { padding: 0.5rem !important; }
+  .px-6 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+  .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+  .py-12 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+
+  /* Tidy the nav buttons and reduce their padding/font-size */
+  nav .inline-flex.items-center.px-4.py-2 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    padding-top: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+    font-size: 0.92rem !important;
+  }
+
+  /* Buttons and controls */
+  .btn-primary, .btn-secondary, .global-export-btn, button, .inline-flex.items-center.px-4.py-2 {
+    padding: 0.45rem 0.6rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Make form controls taller but more compact horizontally */
+  input[type="text"], input[type="email"], input[type="password"], textarea, select {
+    padding: 0.5rem 0.6rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Reduce modal max-width so it fits comfortably on small screens */
+  #exportConfirmModal .max-w-md { max-width: 92% !important; }
+
+  /* Cards grid: stack into single column if any grid was used */
+  .grid.grid-cols-1.sm\:grid-cols-2, .grid.grid-cols-1.sm\:grid-cols-2 > * {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reduce spacing on list cards */
+  .rounded-xl.p-6 { padding: 0.75rem !important; }
+
+  /* Smaller avatars/icons */
+  .h-14.w-14 { height: 2.5rem !important; width: 2.5rem !important; }
+  .h-5.w-5 { height: 1.1rem !important; width: 1.1rem !important; }
+
+  /* Reduce table paddings if any */
+  table td, table th { padding: 0.45rem 0.5rem !important; font-size: 0.92rem !important; }
+}
+
+/* Medium screens adjustments */
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* small tablets and landscape phones */
+  html { font-size: 16px; }
+  .max-w-7xl { max-width: 94% !important; }
+  main.max-w-7xl, .max-w-7xl.mx-auto { padding-left: 1rem !important; padding-right: 1rem !important; }
+  /* Slightly reduce nav item padding so buttons fit on tablet widths */
+  nav .inline-flex.items-center.px-4.py-2 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+  /* Ensure user card footer wraps neatly on tablets too */
+  .user-card-footer { display: flex !important; flex-wrap: wrap !important; gap: 0.5rem !important; justify-content: flex-end !important; }
+  .user-card-footer form, .user-card-footer a, .user-card-footer button { flex: 0 0 auto !important; }
+}
+
+/* Tablet-only adjustments (md): 768px - 1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Slightly larger base on tablets */
+  html { font-size: 16.5px; }
+  /* Make the navbar elements breathe a bit more on tablets */
+  nav { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+  /* Reduce big paddings that cause wrapping issues */
+  .px-4.py-2.inline-flex.items-center { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+  /* Ensure the main content area doesn't feel cramped */
+  .max-w-7xl { max-width: 92% !important; }
+  /* Charts and tables: allow horizontal scroll inside their container if needed */
+  .chart-wrapper, .table-responsive { overflow-x: auto; }
+}
+
+/* Mobile menu styling */
+@media (max-width: 639px) {
+  /* Make the mobile menu fixed under the sticky navbar so it's visible when scrolled */
+  #mobileMenu {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    position: fixed !important;
+    top: 4rem; /* matches navbar height (h-16) */
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 60; /* above nav (nav uses z-50) */
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #mobileMenu a { display: block; padding-left: 1rem; padding-right: 1rem; }
+}
+
+/* Footer of user cards: ensure actions wrap neatly on small screens */
+@media (max-width: 639px) {
+  .user-card-footer { display: flex !important; flex-wrap: wrap !important; gap: 0.35rem !important; justify-content: flex-end !important; }
+  .user-card-footer form, .user-card-footer a, .user-card-footer button { flex: 0 0 auto !important; }
+  .user-card-footer .p-2 { padding: 0.35rem !important; }
+}
+
+/* Safety: ensure tweaks load after compiled Tailwind */
+/* No changes for desktop (>=1024px) to preserve original layout */

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Diagnóstico de Email{% endblock %}
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-2xl w-full">
+    <div class="bg-white/60 backdrop-blur-lg rounded-2xl shadow-xl p-8 space-y-6 border border-gray-100">
+      <div class="text-center space-y-2">
+        <h2 class="text-2xl font-bold text-gray-900">Diagnóstico de Envio de Email</h2>
+        <p class="text-sm text-gray-600">Teste imediato do envio de email a partir do servidor (Render).</p>
+      </div>
+
+      <form method="POST" class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Enviar email de teste para</label>
+          <input type="email" name="to_email" value="{{ default_email }}" required
+                 class="block w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-200"
+                 placeholder="utilizador@exemplo.com"/>
+          <p class="mt-2 text-xs text-gray-500">Por padrão, usa o seu próprio email.</p>
+        </div>
+        <div>
+          <button type="submit"
+                  class="w-full flex justify-center py-3 px-4 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-lg shadow-primary-500/30 transition-all duration-200">
+            Enviar Email de Teste
+          </button>
+        </div>
+      </form>
+
+      {% if status %}
+      <div class="pt-4 space-y-3">
+        <div class="{{ 'bg-green-50 border-green-200 text-green-800' if status=='success' else 'bg-red-50 border-red-200 text-red-800' }} border rounded-md p-4">
+          <p class="text-sm font-medium">Resultado: {{ 'Sucesso' if status=='success' else 'Falha' }}</p>
+        </div>
+
+        {% if details %}
+        <div class="bg-gray-50 border border-gray-200 rounded-md p-4">
+          <p class="text-sm font-semibold text-gray-800 mb-2">Informações de Diagnóstico</p>
+          <ul class="text-xs text-gray-700 space-y-1">
+            <li><strong>APP_URL:</strong> {{ details.APP_URL or 'não definido' }}</li>
+            <li><strong>SMTP_SERVER set?</strong> {{ 'sim' if details.SMTP_SERVER else 'não' }}</li>
+            <li><strong>SMTP_PORT:</strong> {{ details.SMTP_PORT or 'não definido' }}</li>
+            <li><strong>SMTP_EMAIL set?</strong> {{ 'sim' if details.SMTP_EMAIL else 'não' }}</li>
+            <li><strong>SMTP_PASSWORD:</strong> {{ details.SMTP_PASSWORD }}</li>
+            <li><strong>EMAIL_DEBUG:</strong> {{ details.EMAIL_DEBUG or '0' }}</li>
+            <li class="break-all"><strong>RESET_LINK:</strong> {{ details.RESET_LINK }}</li>
+          </ul>
+          <p class="text-xs text-gray-500 mt-2">Observação: valores sensíveis não são exibidos.</p>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <div class="pt-2 text-xs text-gray-500">
+        <p>Para logs detalhados, defina <code class="bg-gray-100 px-1 rounded">EMAIL_DEBUG=1</code> nas variáveis de ambiente do Render.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

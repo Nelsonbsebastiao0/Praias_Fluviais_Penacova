@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Utilizador - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="bg-white/60 backdrop-blur-md shadow-xl rounded-2xl border border-gray-100 overflow-hidden p-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-4">Detalhes do Utilizador</h1>
+
+    <div class="space-y-4">
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm text-gray-500">Nome</div>
+        <div class="font-medium text-gray-900">{{ user.name }}</div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm text-gray-500">Email</div>
+        <div class="font-medium text-gray-900">{{ user.email }}</div>
+      </div>
+
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="text-sm text-gray-500">Função</div>
+        <div class="font-medium text-gray-900">{{ user.role|title }}</div>
+      </div>
+
+      <div class="flex gap-3 mt-4">
+        <a href="{{ url_for('users') }}" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">Voltar à lista</a>
+        {% if current_user.role == ROLE_PRESIDENTE %}
+        <a href="{{ url_for('edit_user', id=user.id) }}" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">Editar</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

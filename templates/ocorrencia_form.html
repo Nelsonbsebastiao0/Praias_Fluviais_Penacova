@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Nova' if not ocorrencia else 'Editar' }} Ocorrência - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">
+                {{ 'Nova' if not ocorrencia else 'Editar' }} Ocorrência
+            </h1>
+            
+            <form method="POST">
+                {{ form.hidden_tag() }}
+
+                <!-- Data e Hora -->
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="date_input" class="block text-sm font-medium text-gray-700">
+                            {{ form.date_input.label.text }}
+                        </label>
+                        <div class="mt-1">
+                            {{ form.date_input(class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md") }}
+                        </div>
+                        {% if form.date_input.errors %}
+                        <div class="mt-1">
+                            {% for error in form.date_input.errors %}
+                            <p class="text-red-600 text-sm">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="time_input" class="block text-sm font-medium text-gray-700">
+                            {{ form.time_input.label.text }}
+                        </label>
+                        <div class="mt-1">
+                            {{ form.time_input(class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md") }}
+                        </div>
+                        {% if form.time_input.errors %}
+                        <div class="mt-1">
+                            {% for error in form.time_input.errors %}
+                            <p class="text-red-600 text-sm">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.querySelector('form');
+                const dateInput = document.querySelector('input[name="date_input"]');
+                const timeInput = document.querySelector('input[name="time_input"]');
+
+                // Configurar a data máxima permitida para hoje
+                const today = new Date();
+                const maxDate = today.toISOString().split('T')[0];
+                dateInput.max = maxDate;
+
+                function setMaxTimeIfToday() {
+                    // Se a data selecionada é hoje, limita a hora ao horário atual
+                    if (!dateInput.value) {
+                        timeInput.removeAttribute('max');
+                        return;
+                    }
+
+                    if (dateInput.value === maxDate) {
+                        const now = new Date();
+                        const hh = String(now.getHours()).padStart(2, '0');
+                        const mm = String(now.getMinutes()).padStart(2, '0');
+                        const maxTime = `${hh}:${mm}`;
+                        timeInput.max = maxTime;
+
+                        // Se o valor atual da hora for maior que o máximo permitido, ajusta para o máximo
+                        if (timeInput.value && timeInput.value > maxTime) {
+                            timeInput.value = maxTime;
+                        }
+                    } else {
+                        timeInput.removeAttribute('max');
+                    }
+                }
+
+                // Preenche valores existentes (se houver)
+                const existingDate = dateInput.value;
+                const existingTime = timeInput.value;
+                if (existingDate) dateInput.value = existingDate;
+                if (existingTime) timeInput.value = existingTime;
+
+                // Aplica a limitação inicial e sempre que a data mudar
+                setMaxTimeIfToday();
+                dateInput.addEventListener('change', setMaxTimeIfToday);
+            });
+        </script>
+
+                <!-- Zona e Tipo -->
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 mt-6">
+                    <div>
+                        <label for="zone" class="block text-sm font-medium text-gray-700">
+                            {{ form.zone.label.text }}
+                        </label>
+                            <div class="mt-1">
+                                {% if zone_choices %}
+                                <select name="zone" id="zone" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                                    <option value="">-- Selecionar Zona --</option>
+                                    {% for z in zone_choices %}
+                                    <option value="{{ z }}" {% if ocorrencia and ocorrencia.zone == z %}selected{% endif %}>{{ z }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% else %}
+                                {{ form.zone(class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md") }}
+                                {% endif %}
+                                {% if current_user.role in ['presidente', 'supervisor'] %}
+                                <div class="mt-2">
+                                    <a href="{{ url_for('new_zone', next=request.path) }}" class="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 hover:bg-primary-50">+
+                                        Nova Zona
+                                    </a>
+                                    <a href="{{ url_for('zones_manage') }}" class="ml-2 inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-md text-sm text-blue-700 hover:bg-blue-50">Gerir Zonas</a>
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% if form.zone.errors %}
+                        <div class="mt-1">
+                            {% for error in form.zone.errors %}
+                            <p class="text-red-600 text-sm">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700">
+                            {{ form.type.label.text }}
+                        </label>
+                        <div class="mt-1">
+                            {% if type_choices %}
+                            <select name="type" id="type" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>
+                                <option value="">-- Selecionar Tipo --</option>
+                                {% for t in type_choices %}
+                                <option value="{{ t }}" {% if ocorrencia and ocorrencia.type == t %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            {{ form.type(class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md") }}
+                            {% endif %}
+                            {% if current_user.role in ['presidente', 'supervisor'] %}
+                                <div class="mt-2">
+                                <a href="{{ url_for('new_type', next=request.path) }}" class="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 hover:bg-primary-50">+
+                                    Novo Tipo
+                                </a>
+                                <a href="{{ url_for('types_manage') }}" class="ml-2 inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-md text-sm text-blue-700 hover:bg-blue-50">Gerir Tipos</a>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if form.type.errors %}
+                        <div class="mt-1">
+                            {% for error in form.type.errors %}
+                            <p class="text-red-600 text-sm">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Descrição -->
+                <div class="mt-6">
+                    <label for="description" class="block text-sm font-medium text-gray-700">
+                        {{ form.description.label.text }}
+                    </label>
+                    <div class="mt-1">
+                        {{ form.description(class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md", rows="4") }}
+                    </div>
+                    {% if form.description.errors %}
+                    <div class="mt-1">
+                        {% for error in form.description.errors %}
+                        <p class="text-red-600 text-sm">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Botões -->
+                <div class="mt-6 flex justify-end space-x-3">
+                    <a href="{{ url_for('ocorrencias') }}" 
+                       class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancelar
+                    </a>
+                    {{ form.submit(class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

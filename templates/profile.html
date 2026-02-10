@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Coluna Esquerda: Informações do Perfil -->
+        <div class="lg:col-span-1">
+            <div class="bg-white/60 backdrop-blur-md shadow-xl rounded-2xl border border-gray-100 overflow-hidden">
+                <div class="p-6">
+                    <!-- Avatar e Nome -->
+                    <div class="text-center">
+                        <div class="h-24 w-24 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 mx-auto flex items-center justify-center">
+                            <i class="fas fa-user text-white text-3xl"></i>
+                        </div>
+                        <h2 class="mt-4 text-xl font-bold text-gray-900">{{ current_user.name }}</h2>
+                        <p class="text-sm text-gray-500">{{ current_user.email }}</p>
+                        
+                        <!-- Badge de Função -->
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mt-2
+                            {% if current_user.role == 'presidente' %}
+                                bg-purple-100 text-purple-800
+                            {% elif current_user.role == 'supervisor' %}
+                                bg-primary-100 text-primary-800
+                            {% else %}
+                                bg-green-100 text-green-800
+                            {% endif %}">
+                            {{ current_user.role|title }}
+                        </span>
+                    </div>
+
+                    <!-- Estatísticas -->
+                    <div class="mt-6 grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-primary-600">{{ current_user.occurrences|length }}</div>
+                            <div class="text-sm text-gray-500">Ocorrências</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-primary-600">
+                                {{ current_user.activities|length }}
+                            </div>
+                            <div class="text-sm text-gray-500">Atividades</div>
+                        </div>
+                    </div>
+
+                    <!-- Ações Rápidas -->
+                    <div class="mt-6 space-y-2">
+                        <a href="{{ url_for('edit_user', id=current_user.id) }}" 
+                           class="flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                            <i class="fas fa-edit mr-2"></i>
+                            Editar Perfil
+                        </a>
+                        <a href="{{ url_for('change_password') }}" 
+                           class="flex items-center justify-center px-4 py-2 border border-primary-600 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors duration-200">
+                            <i class="fas fa-key mr-2"></i>
+                            Alterar Palavra-passe
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna Central: links rápidos para Notificações e Atividades -->
+        <div class="lg:col-span-2">
+            <div class="bg-white/60 backdrop-blur-md shadow-xl rounded-2xl border border-gray-100 overflow-hidden p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Ações</h3>
+                <div class="flex gap-3">
+                    <a href="{{ url_for('notifications') }}" class="px-4 py-2 bg-primary-50 border border-primary-100 text-primary-700 rounded-lg hover:bg-primary-100">Ver Notificações</a>
+                    <a href="{{ url_for('activities') }}" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">Ver Atividades</a>
+                </div>
+                <p class="mt-4 text-sm text-gray-500">Use as páginas separadas para gerir notificações e consultar o histórico de atividades.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

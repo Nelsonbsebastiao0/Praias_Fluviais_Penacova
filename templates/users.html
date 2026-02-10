@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Usuários - Praias Fluviais{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white/60 backdrop-blur-md shadow-xl rounded-2xl border border-gray-100">
+        <!-- Header com Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 p-6 border-b border-gray-100">
+            <div class="col-span-1 md:col-span-2">
+                <h1 class="text-2xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-users text-primary-500 mr-3"></i>
+                    Gestão de Utilizadores
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">Administração de contas e permissões</p>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 gap-4 col-span-1">
+                <div class="bg-primary-50 rounded-xl p-4">
+                    <div class="text-primary-600 text-sm font-medium">Total</div>
+                    <div class="mt-1 flex items-baseline">
+                        <div class="text-2xl font-semibold text-primary-800">{{ users|length }}</div>
+                        <div class="ml-2 text-sm text-primary-600">usuários</div>
+                    </div>
+                </div>
+                <div class="bg-green-50 rounded-xl p-4">
+                    <div class="text-green-600 text-sm font-medium">Ativos</div>
+                    <div class="mt-1 flex items-baseline">
+                        <div class="text-2xl font-semibold text-green-800">{{ users|selectattr('is_active', 'true')|list|length }}</div>
+                        <div class="ml-2 text-sm text-green-600">ativos</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add User Button -->
+            <div class="col-span-1">
+                <a href="{{ url_for('new_user') }}" 
+                   class="w-full h-full flex items-center justify-center px-4 py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl shadow-lg shadow-primary-500/30 hover:from-primary-700 hover:to-primary-600 transition-all duration-200 transform hover:-translate-y-0.5">
+                    <i class="fas fa-user-plus text-xl mr-2"></i>
+                    <span class="font-semibold">Novo Utilizador</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Users Grid -->
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for user in users %}
+            <div class="bg-white/40 backdrop-blur-sm hover:bg-white/60 transition-all duration-300 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transform hover:-translate-y-1">
+                <!-- Card Header -->
+                <div class="p-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="h-14 w-14 rounded-xl bg-gradient-to-br 
+                                {% if user.role == 'presidente' %}
+                                    from-purple-500 to-purple-600
+                                {% elif user.role == 'supervisor' %}
+                                    from-primary-500 to-primary-600
+                                {% else %}
+                                    from-green-500 to-green-600
+                                {% endif %} 
+                                shadow-lg flex items-center justify-center">
+                                <i class="fas {% if user.role == 'presidente' %}fa-crown{% elif user.role == 'supervisor' %}fa-user-shield{% else %}fa-user{% endif %} text-white text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-lg font-semibold text-gray-900 truncate">{{ user.name }}</h3>
+                            <div class="mt-1 flex items-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if user.role == 'presidente' %}
+                                        bg-purple-100 text-purple-800
+                                    {% elif user.role == 'supervisor' %}
+                                        bg-primary-100 text-primary-800
+                                    {% else %}
+                                        bg-green-100 text-green-800
+                                    {% endif %}">
+                                    {{ user.role|title }}
+                                </span>
+                                {% if not user.is_active %}
+                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <i class="fas fa-ban mr-1"></i> Suspenso
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="px-6 pb-6">
+                    <div class="space-y-3">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-envelope text-gray-400 w-5"></i>
+                            <span class="ml-2 truncate">{{ user.email }}</span>
+                        </div>
+                        {% if user.tax_number %}
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-id-card text-gray-400 w-5"></i>
+                            <span class="ml-2 font-mono">{{ user.tax_number }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-clipboard-list text-gray-400 w-5"></i>
+                            <span class="ml-2">{{ user.occurrences|length }} ocorrências</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer / Actions -->
+                <div class="px-6 py-4 bg-gray-50/50 rounded-b-xl border-t border-gray-100 flex items-center justify-end space-x-2 user-card-footer">
+                    <!-- Editar -->
+                    <a href="{{ url_for('edit_user', id=user.id) }}" 
+                       class="p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+                       title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    
+                    <!-- Suspender/Reativar -->
+                    {% if (current_user.role == 'presidente') or (current_user.role == 'supervisor' and user.role == 'nadador') %}
+                    {% if user.is_active %}
+                    <!-- Botão para suspender (abre modal) -->
+                    <button type="button"
+                            class="p-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg transition-all duration-200 suspend-btn"
+                            data-user-id="{{ user.id }}"
+                            data-user-name="{{ user.name }}"
+                            data-user-email="{{ user.email }}"
+                            title="Suspender">
+                        <i class="fas fa-ban"></i>
+                    </button>
+                    {% else %}
+                    <!-- Botão para reativar (sem modal, confirmação direta) -->
+                    <form action="{{ url_for('toggle_user_status', id=user.id) }}" method="POST" class="inline-block">
+                        <button type="submit" 
+                                class="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all duration-200"
+                                onclick="return confirm('Tem certeza que deseja reativar este utilizador?');"
+                                title="Reativar">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Suspensão -->
+<div id="suspensionModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" style="display: none;">
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 pointer-events-auto animate-in">
+            <div class="p-6 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-ban text-yellow-600 mr-3"></i>
+                    Suspender Utilizador
+                </h2>
+            </div>
+        
+        <form id="suspensionForm" method="POST" class="p-6 space-y-4">
+            <div>
+                <p class="text-gray-600 text-sm">
+                    Está a suspender: <strong id="suspensionUserName" class="text-gray-900"></strong>
+                </p>
+                <p class="text-gray-600 text-sm">Email: <strong id="suspensionUserEmail" class="text-gray-900 font-mono"></strong></p>
+            </div>
+            
+            <div>
+                <label for="suspension_reason" class="block text-sm font-medium text-gray-700 mb-2">
+                    Razão da Suspensão <span class="text-red-500">*</span>
+                </label>
+                <textarea 
+                    id="suspension_reason" 
+                    name="suspension_reason" 
+                    rows="4" 
+                    required
+                    placeholder="Explique por que está a suspender este utilizador..."
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-200 text-gray-900 placeholder-gray-400">
+                </textarea>
+                <p class="mt-1 text-xs text-gray-500">Esta razão será registada no histórico de atividades.</p>
+            </div>
+            
+            <div class="flex items-center space-x-3 pt-4 border-t border-gray-100">
+                <button type="button" 
+                        onclick="closeSuspensionModal()"
+                        class="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200 font-medium">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="flex-1 px-4 py-2 text-white bg-yellow-600 hover:bg-yellow-700 rounded-lg transition-all duration-200 font-medium flex items-center justify-center">
+                    <i class="fas fa-ban mr-2"></i>
+                    Suspender
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Adicionar event listeners aos botões de suspender
+document.querySelectorAll('.suspend-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const userId = this.dataset.userId;
+        const userName = this.dataset.userName;
+        const userEmail = this.dataset.userEmail;
+        openSuspensionModal(userId, userName, userEmail);
+    });
+});
+
+function openSuspensionModal(userId, userName, userEmail) {
+    document.getElementById('suspensionUserName').textContent = userName;
+    document.getElementById('suspensionUserEmail').textContent = userEmail;
+    document.getElementById('suspension_reason').value = '';
+    document.getElementById('suspensionForm').action = `/users/${userId}/toggle-status`;
+    
+    const modal = document.getElementById('suspensionModal');
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+
+function closeSuspensionModal() {
+    const modal = document.getElementById('suspensionModal');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+    document.getElementById('suspension_reason').value = '';
+}
+
+// Fechar modal ao clicar fora
+document.getElementById('suspensionModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeSuspensionModal();
+    }
+});
+
+// Fechar com tecla Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeSuspensionModal();
+    }
+});
+</script>
+{% endblock %}
