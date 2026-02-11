@@ -142,6 +142,44 @@ def mark_token_used(token):
         db.session.commit()
 
 
+@app.route('/debug/tables')
+def debug_tables():
+    """Rota temporária para visualizar o conteúdo das tabelas e ajudar no debug."""
+    try:
+        users = User.query.all()
+        users_data = [{
+            'id': u.id, 
+            'email': u.email, 
+            'role': u.role, 
+            'is_active': u.is_active,
+            'password_hash_sample': u.password_hash[:10] + '...' if u.password_hash else 'None'
+        } for u in users]
+        
+        zones = Zone.query.all()
+        zones_data = [{'id': z.id, 'name': z.name} for z in zones]
+        
+        types = OccurrenceType.query.all()
+        types_data = [{'id': t.id, 'name': t.name} for t in types]
+        
+        occurrences = Occurrence.query.limit(10).all()
+        occurrences_data = [{
+            'id': o.id,
+            'date': str(o.date),
+            'zone': o.zone,
+            'type': o.type,
+            'user_email': o.user.email if o.user else 'Unknown'
+        } for o in occurrences]
+
+        return jsonify({
+            'DATABASE_URL_Used': app.config.get('SQLALCHEMY_DATABASE_URI', 'Unknown'),
+            'Users': users_data,
+            'Zones': zones_data,
+            'OccurrenceTypes': types_data,
+            'Occurrences_Sample': occurrences_data
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'type': str(type(e))})
+
 @app.route('/')
 def index():
     # Rota raiz simples — redireciona para o dashboard (ou login se não autenticado)
