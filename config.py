@@ -42,6 +42,9 @@ class Config:
     # Pode ser definida pela variável de ambiente DATABASE_URL
     DATABASE_URL = os.environ.get('DATABASE_URL')
     if DATABASE_URL:
+        # Fix for Render/Heroku: SQLAlchemy requires 'postgresql://', but some providers return 'postgres://'
+        if DATABASE_URL.startswith("postgres://"):
+            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
     else:
         # Padrão: SQLite (desenvolvimento)
