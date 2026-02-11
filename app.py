@@ -1752,40 +1752,59 @@ with app.app_context():
     try:
         db.create_all()
         # Se não houver usuários, criar padrão
-        if User.query.count() == 0:
-            print("🔧 Inicializando banco de dados com usuários padrão...")
-            from werkzeug.security import generate_password_hash
-            
-            users = [
-                User(name='Presidente Silva', email='presidente@praias.pt', 
-                     password_hash=generate_password_hash('Presidente123'),
-                     role=ROLE_PRESIDENTE, is_active=True),
-                User(name='Supervisor Costa', email='supervisor@praias.pt',
-                     password_hash=generate_password_hash('Supervisor123'),
-                     role=ROLE_SUPERVISOR, is_active=True),
-                User(name='Nadador Salvador João', email='nadador1@praias.pt',
-                     password_hash=generate_password_hash('Nadador123'),
-                     role=ROLE_NADADOR, is_active=True),
-                User(name='Nadador Salvador Maria', email='nadador2@praias.pt',
-                     password_hash=generate_password_hash('Nadador123'),
-                     role=ROLE_NADADOR, is_active=True),
-                User(name='Administrador Nelson', email='nelsonalunogpsi@gmail.com',
-                     password_hash=generate_password_hash('Admin123'),
-                     role=ROLE_PRESIDENTE, is_active=True)
-            ]
-            
-            db.session.add_all(users)
-            db.session.commit()
-            
-            print("✅ Usuários criados com sucesso!")
-            print("="*60)
-            print("CREDENCIAIS (use o EMAIL para login):")
-            print("presidente@praias.pt / Presidente123")
-            print("supervisor@praias.pt / Supervisor123")
-            print("nadador1@praias.pt / Nadador123")
-            print("nadador2@praias.pt / Nadador123")
-            print("nelsonalunogpsi@gmail.com / Admin123")
-            print("="*60)
+        # === AUTO-FIX: Garantir utilizadores corretos no Render ===
+        print("🔧 Verificando utilizadores do sistema...")
+        from werkzeug.security import generate_password_hash
+        from models import ROLE_PRESIDENTE, ROLE_SUPERVISOR, ROLE_NADADOR
+
+        # 1. Corrigir contas antigas (praias.pt -> penacova.pt) ou criar se não existirem
+        def ensure_user(email, name, role, password):
+            u = User.query.filter_by(email=email).first()
+            if not u:
+                # Tenta encontrar e migrar a conta antiga (ex: presidente@praias.pt)
+                old_email = email.replace('@penacova.pt', '@praias.pt')
+                u_old = User.query.filter_by(email=old_email).first()
+                if u_old:
+                    print(f"🔄 Migrando {old_email} para {email}...")
+                    u_old.email = email
+                    u_old.name = name
+                    u_old.role = role
+                    u_old.set_password(password)
+                    db.session.add(u_old)
+                else:
+                    print(f"➕ Criando utilizador {email}...")
+                    u = User(name=name, email=email, role=role, is_active=True)
+                    u.set_password(password)
+                    db.session.add(u)
+            else:
+                # O utilizador existe, vamos FORÇAR a password correta para garantir acesso
+                # (Isto resolve o problema de "dados errados" se a password antiga estava lá)
+                u.set_password(password)
+                u.role = role # Garantir role
+                db.session.add(u)
+
+        # Garantir os 3 utilizadores principais
+        ensure_user('presidente@penacova.pt', 'Presidente', ROLE_PRESIDENTE, 'password123')
+        ensure_user('supervisor@penacova.pt', 'Supervisor', ROLE_SUPERVISOR, 'password123')
+        ensure_user('nadador@penacova.pt', 'Nadador', ROLE_NADADOR, 'password123')
+
+        # Remover contas de teste antigas/desnecessárias se existirem
+        for old_email in ['nadador1@praias.pt', 'nadador2@praias.pt', 'nelsonalunogpsi@gmail.com']:
+            old = User.query.filter_by(email=old_email).first()
+            if old:
+                print(f"➖ Removendo conta obsoleta: {old_email}")
+                db.session.delete(old)
+
+        db.session.commit()
+        
+        print("✅ Utilizadores verificados/atualizados com sucesso!")
+        print("="*60)
+        print("CREDENCIAIS ATUALIZADAS (Login no Render):")
+        print("presidente@penacova.pt  / password123")
+        print("supervisor@penacova.pt  / password123")
+        print("nadador@penacova.pt     / password123")
+        print("="*60)
+        
     except Exception as e:
         print(f"⚠️ Erro ao inicializar banco: {e}")
 
